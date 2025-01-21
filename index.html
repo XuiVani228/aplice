@@ -41,14 +41,14 @@
             align-items: center;
             margin-bottom: 10px;
         }
-         .label{
+        .label{
            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-         <p class = "label">Тапни по монете</p>
+        <p class = "label">Тапни по монете</p>
         <div class="coin" id="coin"></div>
        <div class="count" id="count">0</div>
     </div>
@@ -61,7 +61,7 @@
         const countDisplay = document.getElementById('count');
         let isSaving = false;
         const SERVER_URL = 'YOUR_SERVER_URL'; // Замените на URL вашего сервера
-
+        let sendQueue = []; // Очередь для tg.sendData
 
          // Загрузка счета из хранилища
          tg.CloudStorage.getItem('clicker_score', function(err, value){
@@ -77,58 +77,70 @@
              }
          });
 
-        async function saveAndSendData(score) {
-            isSaving = true;
-            try {
-                await new Promise((resolve, reject) => {
-                     tg.CloudStorage.setItem('clicker_score', String(score), (err) => {
-                        if (err) {
-                             console.error('Ошибка при сохранении', err);
-                            reject(err);
-                         }
-                        resolve();
-                     });
+     async function saveAndSendData(score) {
+         isSaving = true;
+         try {
+             await new Promise((resolve, reject) => {
+                 tg.CloudStorage.setItem('clicker_score', String(score), (err) => {
+                     if (err) {
+                         console.error('Ошибка при сохранении', err);
+                         reject(err);
+                     }
+                     resolve();
                  });
-               const response = await fetch(SERVER_URL, {
+             });
+             const response = await fetch(SERVER_URL, {
                  method: 'POST',
-                  headers: {
+                 headers: {
                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ score: score }),
-              });
-               if (!response.ok) {
-                   const message = `Error: ${response.status}`;
-                   throw new Error(message);
-                }
-            tg.sendData(String(score));
-             console.log('Отправляю счет боту: ', String(score))
+                 },
+                 body: JSON.stringify({ score: score }),
+             });
+            if (!response.ok) {
+                const message = `Error: ${response.status}`;
+               throw new Error(message);
+            }
+             sendQueue.push(score); // Добавить счет в очередь
 
-           } catch(error){
-               console.error("Ошибка при сохранении и отправке: ", error);
-          }finally{
+        } catch(error){
+             console.error("Ошибка при сохранении и отправке: ", error);
+         }finally{
             isSaving = false;
-          }
         }
-
+     }
         coin.addEventListener('click', async () => {
               if(isSaving) return; // Если сохраняется, то игнорировать
             count++;
             countDisplay.textContent = count;
-             await saveAndSendData(count);
-
+            await saveAndSendData(count);
         });
-          tg.onEvent('web_app_close', async () =>{
-            if(isSaving){
-               console.log('Сохранение еще не завершено, ждем...');
-               while(isSaving){
-                 await new Promise((resolve) => setTimeout(resolve, 100))
-               }
-                 console.log('Сохранение завершено, отправляем счет при закрытии');
-             }
-               await saveAndSendData(count);
-              console.log('Отправляю счет при закрытии: ', String(count))
 
-         });
+        // Функция для отправки данных из очереди
+        function processSendQueue() {
+             if (sendQueue.length > 0) {
+                const score = sendQueue.shift(); // Получить первый счет
+                 tg.sendData(String(score));
+                console.log('Отправляю счет боту: ', String(score))
+            }
+        }
+
+         // Отправка данных из очереди по таймеру
+        setInterval(processSendQueue, 1000);
+
+        tg.onEvent('web_app_close', async () =>{
+           if(isSaving){
+              console.log('Сохранение еще не завершено, ждем...');
+              while(isSaving){
+                await new Promise((resolve) => setTimeout(resolve, 100))
+              }
+                console.log('Сохранение завершено, отправляем счет при закрытии');
+            }
+           while (sendQueue.length > 0) {
+               processSendQueue(); // Отправляем оставшиеся данные при закрытии
+              await new Promise((resolve) => setTimeout(resolve, 100));
+           }
+             console.log('Отправка данных боту завершена')
+        });
 
     </script>
 </body>
