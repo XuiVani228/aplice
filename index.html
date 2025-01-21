@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Mini App</title>
+    <title>YouTube Downloader</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -19,23 +19,50 @@
             padding: 20px;
             background-color: white;
             border-radius: 10px;
-             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+             width: 400px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 80%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+             margin: 10px 0;
+        }
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Привет из Mini App!</h1>
-        <p>Это простое мини-приложение для Telegram.</p>
-        <button id = "button">Нажми меня!</button>
+        <h1>YouTube Video Downloader</h1>
+        <input type="text" id="videoUrl" placeholder="Enter YouTube video URL">
+        <button onclick="downloadVideo()">Download Video</button>
     </div>
     <script>
-         const tg = window.Telegram.WebApp;
-         tg.ready();
-         document.getElementById("button").addEventListener("click", () => {
-            tg.MainButton.text = "Ты нажал на кнопку";
-            tg.MainButton.show();
-          });
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        function downloadVideo() {
+            const videoUrl = document.getElementById('videoUrl').value;
+            if (videoUrl) {
+               tg.sendData(videoUrl);
+              tg.MainButton.text = "Отправляю ссылку боту...";
+              tg.MainButton.show();
+            } else {
+                 tg.showAlert("Пожалуйста, введите ссылку на видео.");
+            }
+        }
     </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
