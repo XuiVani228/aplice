@@ -41,6 +41,10 @@
         button:hover {
             background-color: #45a049;
         }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -48,25 +52,39 @@
         <h1>YouTube Video Downloader</h1>
         <input type="text" id="videoUrl" placeholder="Enter YouTube video URL">
         <button id="downloadButton">Download Video</button>
+        <p id="errorMessage" class="error"></p>
     </div>
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
 
         const button = document.getElementById('downloadButton');
+        const errorDiv = document.getElementById('errorMessage');
 
-        button.addEventListener('click', () => {
+
+        button.addEventListener('click', function() {
             const videoUrl = document.getElementById('videoUrl').value;
+            errorDiv.textContent = '';
+
             if (videoUrl) {
-                tg.MainButton.text = "Отправляю ссылку боту...";
-                tg.MainButton.show();
-                console.log('Отправляю ссылку боту:', videoUrl);
-                 setTimeout(() => {
-                    tg.sendData(videoUrl);
-                }, 500);
-            } else {
-              tg.showAlert("Пожалуйста, введите ссылку на видео.");
-                console.log('Ошибка: Пустая ссылка');
+                console.log('URL перед отправкой:', videoUrl);
+
+                 tg.MainButton.text = "Отправляю ссылку боту...";
+                 tg.MainButton.show();
+
+                try {
+                   setTimeout(() => {
+                      tg.sendData(videoUrl);
+                        console.log('sendData вызван, данные:', videoUrl);
+                   }, 500);
+                } catch (error) {
+                    errorDiv.textContent = 'Ошибка отправки данных: ' + error.message;
+                    console.error('Ошибка:', error);
+                }
+
+             } else {
+                errorDiv.textContent = 'Пожалуйста, введите ссылку на видео.';
+                 console.log('Ошибка: Пустая ссылка');
             }
         });
     </script>
