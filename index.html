@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
+       body {
             font-family: sans-serif;
             display: flex;
             flex-direction: column;
@@ -48,7 +48,7 @@
 </head>
 <body>
     <div class="container">
-        <p class = "label">Тапни по монете</p>
+         <p class = "label">Тапни по монете</p>
         <div class="coin" id="coin"></div>
        <div class="count" id="count">0</div>
     </div>
@@ -59,7 +59,9 @@
         let count = 0;
         const coin = document.getElementById('coin');
         const countDisplay = document.getElementById('count');
-        let isSaving = false; // Флаг, чтобы отслеживать сохранение
+        let isSaving = false;
+        const SERVER_URL = 'YOUR_SERVER_URL'; // Замените на URL вашего сервера
+
 
          // Загрузка счета из хранилища
          tg.CloudStorage.getItem('clicker_score', function(err, value){
@@ -75,7 +77,7 @@
              }
          });
 
-      async function saveAndSendData(score) {
+        async function saveAndSendData(score) {
             isSaving = true;
             try {
                 await new Promise((resolve, reject) => {
@@ -87,22 +89,35 @@
                         resolve();
                      });
                  });
-             tg.sendData(String(score));
-            console.log('Отправляю счет боту: ', String(score))
+               const response = await fetch(SERVER_URL, {
+                 method: 'POST',
+                  headers: {
+                     'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ score: score }),
+              });
+               if (!response.ok) {
+                   const message = `Error: ${response.status}`;
+                   throw new Error(message);
+                }
+            tg.sendData(String(score));
+             console.log('Отправляю счет боту: ', String(score))
+
            } catch(error){
                console.error("Ошибка при сохранении и отправке: ", error);
           }finally{
             isSaving = false;
           }
-      }
+        }
 
         coin.addEventListener('click', async () => {
-            if(isSaving) return; // Если сохраняется, то игнорировать
+              if(isSaving) return; // Если сохраняется, то игнорировать
             count++;
             countDisplay.textContent = count;
-            await saveAndSendData(count);
+             await saveAndSendData(count);
+
         });
-        tg.onEvent('web_app_close', async () =>{
+          tg.onEvent('web_app_close', async () =>{
             if(isSaving){
                console.log('Сохранение еще не завершено, ждем...');
                while(isSaving){
@@ -110,9 +125,11 @@
                }
                  console.log('Сохранение завершено, отправляем счет при закрытии');
              }
-            await saveAndSendData(count);
+               await saveAndSendData(count);
               console.log('Отправляю счет при закрытии: ', String(count))
+
          });
+
     </script>
 </body>
 </html>
