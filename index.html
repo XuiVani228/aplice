@@ -41,14 +41,14 @@
             align-items: center;
             margin-bottom: 10px;
         }
-         .label{
+        .label{
            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-         <p class = "label">Тапни по монете</p>
+        <p class = "label">Тапни по монете</p>
         <div class="coin" id="coin"></div>
        <div class="count" id="count">0</div>
     </div>
@@ -82,13 +82,11 @@
             tg.CloudStorage.setItem('clicker_score', String(count), function(err){
                 if(err)
                     console.error('Ошибка при сохранении', err);
-                     tg.sendData(String(count));
-                  console.log('Отправляю счет боту: ', String(count))
-
+                tg.sendData(String(count));
+                console.log('Отправляю счет боту: ', String(count))
             });
-
-        });
-     tg.onEvent('web_app_close', () =>{
+         });
+         tg.onEvent('web_app_close', () =>{
              tg.sendData(String(count));
              console.log('Отправляю счет при закрытии: ', String(count))
          });
