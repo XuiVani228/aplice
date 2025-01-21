@@ -8,30 +8,31 @@
 <body>
     <h1>Test Mini App</h1>
     <button id="testButton">Send Test Data</button>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         console.log("JavaScript начал выполняться.");
+        window.onload = function () {
+            const tg = window.Telegram.WebApp;
+             console.log("Telegram WebApp API ready.");
+            tg.ready();
 
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        console.log("Telegram WebApp API ready.");
+            const testButton = document.getElementById('testButton');
+            console.log("Кнопка найдена:", testButton);
 
-        const testButton = document.getElementById('testButton');
-         console.log("Кнопка найдена:", testButton);
-
-        if (testButton) {
-            testButton.addEventListener('click', function() {
-                console.log("Кнопка нажата.");
-                tg.MainButton.text = 'Отправка...';
-                tg.MainButton.show();
-                 setTimeout(() => {
-                      tg.sendData('test_data');
-                       console.log('Данные отправлены: test_data');
+            if (testButton) {
+                testButton.addEventListener('click', function() {
+                   console.log("Кнопка нажата.");
+                    tg.MainButton.text = 'Отправка...';
+                    tg.MainButton.show();
+                    setTimeout(() => {
+                        tg.sendData('test_data');
+                        console.log('Данные отправлены: test_data');
                    }, 500);
-             });
-        } else {
-            console.error("Ошибка: Кнопка не найдена");
+                });
+           } else {
+                console.error("Ошибка: Кнопка не найдена");
+            }
         }
     </script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
 </html>
