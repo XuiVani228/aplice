@@ -56,11 +56,13 @@
         function downloadVideo() {
             const videoUrl = document.getElementById('videoUrl').value;
             if (videoUrl) {
-               tg.sendData(videoUrl);
-              tg.MainButton.text = "Отправляю ссылку боту...";
-              tg.MainButton.show();
-            } else {
-                 tg.showAlert("Пожалуйста, введите ссылку на видео.");
+                tg.sendData(videoUrl);
+                tg.MainButton.text = "Отправляю ссылку боту...";
+                 tg.MainButton.show();
+                console.log('Ссылка отправлена: ', videoUrl); // Для отладки
+             } else {
+                tg.showAlert("Пожалуйста, введите ссылку на видео.");
+                console.log('Ошибка: Пустая ссылка'); // Для отладки
             }
         }
     </script>
