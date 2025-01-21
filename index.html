@@ -22,6 +22,13 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
              width: 400px;
         }
+         .loading {
+            display: none;
+             margin: 10px 0;
+            font-style: italic;
+             color: grey;
+
+        }
         input[type="text"] {
             padding: 10px;
             margin: 10px 0;
@@ -47,24 +54,28 @@
     <div class="container">
         <h1>YouTube Video Downloader</h1>
         <input type="text" id="videoUrl" placeholder="Enter YouTube video URL">
-        <button onclick="downloadVideo()">Download Video</button>
+        <button id = "downloadButton">Download Video</button>
+        <p class = "loading" id = "loadingMessage">Загрузка...</p>
     </div>
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
+        const button = document.getElementById('downloadButton');
+        const loadingMessage = document.getElementById('loadingMessage');
 
-        function downloadVideo() {
-            const videoUrl = document.getElementById('videoUrl').value;
-            if (videoUrl) {
+        button.addEventListener('click', () => {
+           const videoUrl = document.getElementById('videoUrl').value;
+           if (videoUrl) {
+                loadingMessage.style.display = 'block';
                 tg.sendData(videoUrl);
                 tg.MainButton.text = "Отправляю ссылку боту...";
-                 tg.MainButton.show();
-                console.log('Ссылка отправлена: ', videoUrl); // Для отладки
+                tg.MainButton.show();
+                console.log('Ссылка отправлена: ', videoUrl);
              } else {
                 tg.showAlert("Пожалуйста, введите ссылку на видео.");
-                console.log('Ошибка: Пустая ссылка'); // Для отладки
+                console.log('Ошибка: Пустая ссылка');
             }
-        }
+        });
     </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
