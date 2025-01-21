@@ -46,21 +46,21 @@
             align-items: center;
             margin-bottom: 10px;
         }
-         .label{
+        .label{
            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-       <p class = "label">Тапни по монете</p>
+        <p class = "label">Тапни по монете</p>
         <div class="coin" id="coin"></div>
        <div class="count" id="count">0</div>
-       <div class="limit-display" id = "limitDisplay"></div>
+        <div class="limit-display" id="limitDisplay"></div>
     </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        const tg = window.Telegram.WebApp;
+       const tg = window.Telegram.WebApp;
         tg.ready();
         let count = 0;
         let clickLimit = 1000;
@@ -68,126 +68,126 @@
         const coin = document.getElementById('coin');
         const countDisplay = document.getElementById('count');
         const limitDisplay = document.getElementById('limitDisplay');
-         let isSaving = false;
+        let isSaving = false;
         const SERVER_URL = 'YOUR_SERVER_URL'; // Замените на URL вашего сервера
         let sendQueue = []; // Очередь для tg.sendData
 
-       // Загрузка счета из хранилища
-       tg.CloudStorage.getItem('clicker_score', function(err, value){
-             if(err){
-                console.error('Ошибка при загрузке', err);
+      // Загрузка счета из хранилища
+      tg.CloudStorage.getItem('clicker_score', function(err, value){
+           if(err){
+              console.error('Ошибка при загрузке', err);
+          } else {
+              if(value){
+                  count = parseInt(value);
+                  countDisplay.textContent = count;
+              } else{
+                 console.log('Нет сохраненного значения')
+              }
+           }
+      });
+      // Загрузка лимита кликов
+      tg.CloudStorage.getItem('click_limit', function(err, value){
+           if(err){
+               console.error('Ошибка при загрузке', err);
             } else {
-                if(value){
-                     count = parseInt(value);
-                     countDisplay.textContent = count;
-                } else{
-                    console.log('Нет сохраненного значения')
+               if(value){
+                    currentClicks = parseInt(value);
+               } else{
+                     currentClicks = clickLimit; //Устанавливаем лимит, если нету в хранилище
                 }
-             }
-        });
-           // Загрузка лимита из хранилища
-        tg.CloudStorage.getItem('click_limit', function(err, value){
-             if(err){
-                console.error('Ошибка при загрузке', err);
-            } else {
-                if(value){
-                     currentClicks = parseInt(value);
-                } else{
-                   currentClicks = clickLimit; //Устанавливаем лимит, если нету в хранилище
-                 }
                   updateLimitDisplay();
-             }
-        });
+            }
+      });
 
       async function saveAndSendData(score) {
-            isSaving = true;
-            try {
-                await new Promise((resolve, reject) => {
-                     tg.CloudStorage.setItem('clicker_score', String(score), (err) => {
-                        if (err) {
-                             console.error('Ошибка при сохранении', err);
-                            reject(err);
-                         }
-                        resolve();
-                     });
-                 });
-                  await new Promise((resolve, reject) => {
-                    tg.CloudStorage.setItem('click_limit', String(currentClicks), (err) => {
-                        if (err) {
-                            console.error('Ошибка при сохранении', err);
-                             reject(err);
-                         }
-                         resolve();
-                    });
-                });
-               const response = await fetch(SERVER_URL, {
-                   method: 'POST',
-                  headers: {
-                       'Content-Type': 'application/json',
-                  },
-                   body: JSON.stringify({ score: score }),
+          isSaving = true;
+          try {
+             await new Promise((resolve, reject) => {
+                 tg.CloudStorage.setItem('clicker_score', String(score), (err) => {
+                    if (err) {
+                       console.error('Ошибка при сохранении', err);
+                        reject(err);
+                     }
+                   resolve();
+                  });
+             });
+              await new Promise((resolve, reject) => {
+                 tg.CloudStorage.setItem('click_limit', String(currentClicks), (err) => {
+                    if (err) {
+                         console.error('Ошибка при сохранении', err);
+                        reject(err);
+                    }
+                     resolve();
+                  });
               });
-               if (!response.ok) {
-                    const message = `Error: ${response.status}`;
-                   throw new Error(message);
-                }
+             const response = await fetch(SERVER_URL, {
+                method: 'POST',
+                headers: {
+                   'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ score: score }),
+             });
+            if (!response.ok) {
+                const message = `Error: ${response.status}`;
+                throw new Error(message);
+            }
              sendQueue.push(score); // Добавить счет в очередь
-           } catch(error){
-               console.error("Ошибка при сохранении и отправке: ", error);
+
+          } catch(error){
+             console.error("Ошибка при сохранении и отправке: ", error);
           }finally{
             isSaving = false;
           }
-    }
-     function updateLimitDisplay(){
-        limitDisplay.textContent = `Клики: ${currentClicks} / ${clickLimit} (+2/сек)`;
-     }
+      }
+       function updateLimitDisplay() {
+         limitDisplay.textContent = `Клики: ${currentClicks} / ${clickLimit} (+2/сек)`;
+       }
        coin.addEventListener('click', async () => {
-         if(isSaving) return;
-        if(currentClicks > 0){
-             count++;
-             countDisplay.textContent = count;
-             currentClicks--;
-             updateLimitDisplay();
-             await saveAndSendData(count);
-         } else{
-             console.log("Нет кликов");
-        }
-      });
-      function processSendQueue() {
-            if (sendQueue.length > 0) {
-               const score = sendQueue.shift();
+            if(isSaving) return;
+            if (currentClicks > 0) {
+                count++;
+                countDisplay.textContent = count;
+                currentClicks--;
+                updateLimitDisplay();
+               await saveAndSendData(count);
+             } else {
+                console.log("Нет кликов");
+            }
+        });
+       function processSendQueue() {
+             if (sendQueue.length > 0) {
+                const score = sendQueue.shift();
                 tg.sendData(String(score));
                console.log('Отправляю счет боту: ', String(score))
-          }
-      }
+            }
+        }
        // Отправка данных из очереди по таймеру
-      setInterval(processSendQueue, 1000);
-     setInterval(() => {
-          if(currentClicks < clickLimit){
-               currentClicks = Math.min(currentClicks + 2, clickLimit);
-              updateLimitDisplay();
-              tg.CloudStorage.setItem('click_limit', String(currentClicks), (err) => {
+       setInterval(processSendQueue, 1000);
+      setInterval(() => {
+            if (currentClicks < clickLimit) {
+                currentClicks = Math.min(currentClicks + 2, clickLimit);
+                updateLimitDisplay();
+                 tg.CloudStorage.setItem('click_limit', String(currentClicks), (err) => {
                     if (err) {
-                         console.error('Ошибка при сохранении', err);
-                    }
-             });
-         }
-        }, 1000);
-       tg.onEvent('web_app_close', async () =>{
+                        console.error('Ошибка при сохранении', err);
+                     }
+                });
+            }
+      }, 1000);
+     tg.onEvent('web_app_close', async () =>{
             if(isSaving){
               console.log('Сохранение еще не завершено, ждем...');
               while(isSaving){
-                 await new Promise((resolve) => setTimeout(resolve, 100))
+                await new Promise((resolve) => setTimeout(resolve, 100))
               }
-                 console.log('Сохранение завершено, отправляем счет при закрытии');
+              console.log('Сохранение завершено, отправляем счет при закрытии');
             }
-           while (sendQueue.length > 0) {
-               processSendQueue();
-              await new Promise((resolve) => setTimeout(resolve, 100));
-           }
-            console.log('Отправка данных боту завершена')
-        });
-
+            while (sendQueue.length > 0) {
+                processSendQueue();
+                 await new Promise((resolve) => setTimeout(resolve, 100));
+            }
+          console.log('Отправка данных боту завершена')
+      });
     </script>
 </body>
 </html>
