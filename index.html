@@ -74,9 +74,28 @@
         const countDisplay = document.getElementById('count');
         const sendScoreButton = document.getElementById('sendScoreButton');
 
+        // Загрузка счета из хранилища
+         tg.CloudStorage.getItem('clicker_score', function(err, value){
+            if(err){
+                console.error('Ошибка при загрузке', err);
+             } else {
+                if(value){
+                     count = parseInt(value);
+                   countDisplay.textContent = count;
+                } else{
+                    console.log('Нет сохраненного значения')
+                }
+            }
+        });
+
         coin.addEventListener('click', () => {
             count++;
             countDisplay.textContent = count;
+            // Сохранение счета
+            tg.CloudStorage.setItem('clicker_score', String(count), function(err){
+                if(err)
+                    console.error('Ошибка при сохранении', err);
+            });
         });
         sendScoreButton.addEventListener('click', () => {
                 tg.sendData(String(count));
