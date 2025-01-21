@@ -41,29 +41,16 @@
             align-items: center;
             margin-bottom: 10px;
         }
-        .label{
+         .label{
            margin-bottom: 10px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-             margin-top: 10px;
-        }
-        button:hover {
-            background-color: #45a049;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <p class = "label">Тапни по монете</p>
+         <p class = "label">Тапни по монете</p>
         <div class="coin" id="coin"></div>
        <div class="count" id="count">0</div>
-       <button id = "sendScoreButton">Отправить счет</button>
     </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
@@ -72,7 +59,6 @@
         let count = 0;
         const coin = document.getElementById('coin');
         const countDisplay = document.getElementById('count');
-        const sendScoreButton = document.getElementById('sendScoreButton');
 
         // Загрузка счета из хранилища
          tg.CloudStorage.getItem('clicker_score', function(err, value){
@@ -83,7 +69,7 @@
                      count = parseInt(value);
                    countDisplay.textContent = count;
                 } else{
-                    console.log('Нет сохраненного значения')
+                   console.log('Нет сохраненного значения')
                 }
             }
         });
@@ -91,17 +77,21 @@
         coin.addEventListener('click', () => {
             count++;
             countDisplay.textContent = count;
-            // Сохранение счета
+
+            // Автоматическое сохранение счета
             tg.CloudStorage.setItem('clicker_score', String(count), function(err){
                 if(err)
                     console.error('Ошибка при сохранении', err);
+                     tg.sendData(String(count));
+                  console.log('Отправляю счет боту: ', String(count))
+
             });
+
         });
-        sendScoreButton.addEventListener('click', () => {
-                tg.sendData(String(count));
-                tg.MainButton.text = "Отправляю счет боту...";
-                tg.MainButton.show();
-            });
+     tg.onEvent('web_app_close', () =>{
+             tg.sendData(String(count));
+             console.log('Отправляю счет при закрытии: ', String(count))
+         });
     </script>
 </body>
 </html>
