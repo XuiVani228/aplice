@@ -1,46 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Test Mini App</title>
+    <title>Clicker Mini App</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .coin {
+            width: 150px;
+            height: 150px;
+            background-color: gold;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease;
+        }
+        .coin:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .count {
+            font-size: 3em;
+            margin-top: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .label{
+           margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+             margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Test Mini App</h1>
-    <button id="testButton">Send Test Data</button>
+    <div class="container">
+        <p class = "label">Тапни по монете</p>
+        <div class="coin" id="coin"></div>
+       <div class="count" id="count">0</div>
+       <button id = "sendScoreButton">Отправить счет</button>
+    </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        console.log("JavaScript начал выполняться.");
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        let count = 0;
+        const coin = document.getElementById('coin');
+        const countDisplay = document.getElementById('count');
+        const sendScoreButton = document.getElementById('sendScoreButton');
 
-        setTimeout(function() {
-            console.log("Задержка в 1 секунду");
-            if (window.Telegram && window.Telegram.WebApp) {
-                console.log("Telegram WebApp API ready.");
-                const tg = window.Telegram.WebApp;
-                tg.ready();
-
-                const testButton = document.getElementById('testButton');
-                console.log("Кнопка найдена:", testButton);
-
-               if (testButton) {
-                   testButton.addEventListener('click', function() {
-                       console.log("Кнопка нажата.");
-                       tg.MainButton.text = 'Отправка...';
-                       tg.MainButton.show();
-                      setTimeout(() => {
-                            tg.sendData('test_data');
-                           console.log('Данные отправлены: test_data');
-                        }, 500);
-                   });
-                } else {
-                   console.error("Ошибка: Кнопка не найдена");
-               }
-             } else {
-                console.error("Telegram WebApp API не готов");
-            }
-        }, 1000);
-
-
+        coin.addEventListener('click', () => {
+            count++;
+            countDisplay.textContent = count;
+        });
+        sendScoreButton.addEventListener('click', () => {
+                tg.sendData(String(count));
+                tg.MainButton.text = "Отправляю счет боту...";
+                tg.MainButton.show();
+            });
     </script>
 </body>
 </html>
