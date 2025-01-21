@@ -41,7 +41,7 @@
             align-items: center;
             margin-bottom: 10px;
         }
-        .label{
+         .label{
            margin-bottom: 10px;
         }
     </style>
@@ -53,42 +53,65 @@
        <div class="count" id="count">0</div>
     </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
+     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         let count = 0;
         const coin = document.getElementById('coin');
         const countDisplay = document.getElementById('count');
+        let isSaving = false; // Флаг, чтобы отслеживать сохранение
 
-        // Загрузка счета из хранилища
+         // Загрузка счета из хранилища
          tg.CloudStorage.getItem('clicker_score', function(err, value){
-            if(err){
-                console.error('Ошибка при загрузке', err);
+             if(err){
+                 console.error('Ошибка при загрузке', err);
              } else {
-                if(value){
+                 if(value){
                      count = parseInt(value);
-                   countDisplay.textContent = count;
-                } else{
-                   console.log('Нет сохраненного значения')
+                    countDisplay.textContent = count;
+                 } else{
+                     console.log('Нет сохраненного значения')
                 }
-            }
-        });
+             }
+         });
 
-        coin.addEventListener('click', () => {
+      async function saveAndSendData(score) {
+            isSaving = true;
+            try {
+                await new Promise((resolve, reject) => {
+                     tg.CloudStorage.setItem('clicker_score', String(score), (err) => {
+                        if (err) {
+                             console.error('Ошибка при сохранении', err);
+                            reject(err);
+                         }
+                        resolve();
+                     });
+                 });
+             tg.sendData(String(score));
+            console.log('Отправляю счет боту: ', String(score))
+           } catch(error){
+               console.error("Ошибка при сохранении и отправке: ", error);
+          }finally{
+            isSaving = false;
+          }
+      }
+
+        coin.addEventListener('click', async () => {
+            if(isSaving) return; // Если сохраняется, то игнорировать
             count++;
             countDisplay.textContent = count;
-
-            // Автоматическое сохранение счета
-            tg.CloudStorage.setItem('clicker_score', String(count), function(err){
-                if(err)
-                    console.error('Ошибка при сохранении', err);
-                tg.sendData(String(count));
-                console.log('Отправляю счет боту: ', String(count))
-            });
-         });
-         tg.onEvent('web_app_close', () =>{
-             tg.sendData(String(count));
-             console.log('Отправляю счет при закрытии: ', String(count))
+            await saveAndSendData(count);
+        });
+        tg.onEvent('web_app_close', async () =>{
+            if(isSaving){
+               console.log('Сохранение еще не завершено, ждем...');
+               while(isSaving){
+                 await new Promise((resolve) => setTimeout(resolve, 100))
+               }
+                 console.log('Сохранение завершено, отправляем счет при закрытии');
+             }
+            await saveAndSendData(count);
+              console.log('Отправляю счет при закрытии: ', String(count))
          });
     </script>
 </body>
