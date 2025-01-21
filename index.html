@@ -12,39 +12,34 @@
     <script>
         console.log("JavaScript начал выполняться.");
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOMContentLoaded event fired');
+        setTimeout(function() {
+            console.log("Задержка в 1 секунду");
+            if (window.Telegram && window.Telegram.WebApp) {
+                console.log("Telegram WebApp API ready.");
+                const tg = window.Telegram.WebApp;
+                tg.ready();
 
-             function initializeWebApp() {
-                 if (window.Telegram && window.Telegram.WebApp) {
-                     console.log("Telegram WebApp API ready.");
-                     const tg = window.Telegram.WebApp;
-                     tg.ready();
+                const testButton = document.getElementById('testButton');
+                console.log("Кнопка найдена:", testButton);
 
-                     const testButton = document.getElementById('testButton');
-                     console.log("Кнопка найдена:", testButton);
+               if (testButton) {
+                   testButton.addEventListener('click', function() {
+                       console.log("Кнопка нажата.");
+                       tg.MainButton.text = 'Отправка...';
+                       tg.MainButton.show();
+                      setTimeout(() => {
+                            tg.sendData('test_data');
+                           console.log('Данные отправлены: test_data');
+                        }, 500);
+                   });
+                } else {
+                   console.error("Ошибка: Кнопка не найдена");
+               }
+             } else {
+                console.error("Telegram WebApp API не готов");
+            }
+        }, 1000);
 
-                     if (testButton) {
-                         testButton.addEventListener('click', function() {
-                              console.log("Кнопка нажата.");
-                             tg.MainButton.text = 'Отправка...';
-                             tg.MainButton.show();
-                             setTimeout(() => {
-                                  tg.sendData('test_data');
-                                   console.log('Данные отправлены: test_data');
-                                 }, 500);
-                         });
-                    } else {
-                         console.error("Ошибка: Кнопка не найдена");
-                    }
-                }
-              else{
-                   console.log("Telegram WebApp not ready yet, retrying in 100ms");
-                setTimeout(initializeWebApp, 100);
-                 }
-             }
-              initializeWebApp();
-        });
 
     </script>
 </body>
